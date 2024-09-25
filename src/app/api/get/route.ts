@@ -1,17 +1,25 @@
 import { getAllMessages } from "@/utils/bot";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-    
+  try {
     const data = await req.json();
     const channelName = data.currentNote;
-    
-    const messages = await getAllMessages(channelName)
 
-    if(messages?.length === 0){
-        return new Response(JSON.stringify([]), { status: 200 });
+    if (!channelName) {
+      return new NextResponse(JSON.stringify({ error: "Channel name is required" }), { status: 400 });
     }
-    else{   
-        return new Response(JSON.stringify(messages), { status: 200 })
+
+    const messages = await getAllMessages(channelName);
+
+    if (!messages || messages.length === 0) {
+      return new NextResponse(JSON.stringify([]), { status: 200 });
     }
+
+    return new NextResponse(JSON.stringify(messages), { status: 200 });
+
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    return new NextResponse(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
+  }
 }
