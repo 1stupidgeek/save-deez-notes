@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createNewChannel } from "@/utils/bot";
 import { NextRequest, NextResponse } from "next/server";
 

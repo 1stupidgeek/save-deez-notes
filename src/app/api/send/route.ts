@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { deleteMessage, editMessage, sendMessage } from "@/utils/bot";
 import { NextResponse } from "next/server";
 

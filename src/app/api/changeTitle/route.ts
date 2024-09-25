@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { changeTitle } from "@/utils/bot";
 import { NextResponse } from "next/server";
 

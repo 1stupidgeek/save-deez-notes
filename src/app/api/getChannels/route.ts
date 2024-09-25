@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getAllChannels, getClient } from "@/utils/bot";
 
 export async function GET() {
