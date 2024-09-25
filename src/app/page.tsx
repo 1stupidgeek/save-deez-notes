@@ -1,6 +1,5 @@
 'use client';
 
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import TextArea from './_components/TextArea';
 import SideNav from './_components/SideNav';
 

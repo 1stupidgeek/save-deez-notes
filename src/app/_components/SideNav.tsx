@@ -49,10 +49,10 @@ export default function SideNav() {
         return;
       }
       try {
-        // await createNewNote(formattedNote); // Call the createNewNote function
-        setNewNote(""); // Clear the input field
-        await getNotes(); // Refresh the list of notes
-        setCurrentNote(formattedNote); // Set the current note to the newly created one
+        setNewNote(""); 
+        await getNotes();
+        setCurrentNote(formattedNote); 
+        await createNewChannel(newNote)
       } catch (error) {
         console.error("Error creating new note:", error);
       }
@@ -117,5 +117,22 @@ async function getAllChannels() {
     } catch (e) {
         console.error("Unable to fetch channels", e);
         throw e;
+    }
+}
+
+async function createNewChannel(channelName:string) {
+    try {
+        const resp = await fetch("/api/createNewChannel", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ channelName }),
+        });
+        console.log('API Response:', resp);
+        const data = await resp.json();
+        return data;
+    } catch (e) {
+        console.error("Unable to post message", e);
     }
 }

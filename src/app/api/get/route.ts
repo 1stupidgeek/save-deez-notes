@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     
     const messages = await getAllMessages(channelName)
 
-    if(messages.length === 0){
+    if(messages?.length === 0){
         return new Response(JSON.stringify([]), { status: 200 });
     }
     else{   

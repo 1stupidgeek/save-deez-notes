@@ -1,9 +1,8 @@
 "use client"
-
 import { noteState } from '@/store/noteState';
 import { ChangeEvent, useEffect, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState } from 'recoil';
 
 interface Message {
     id: string;
@@ -11,24 +10,25 @@ interface Message {
 }
 
 export default function TextArea() {
-    const currentNote = useRecoilValue(noteState);
+    const [currentNote, setCurrentNote] = useRecoilState(noteState);
     const [messages, setMessages] = useState<Message[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [changeableContent, setChangeableContent] = useState<string>('');
+    const [newTitle, setNewTitle] = useState<string>("");
 
     useEffect(() => {
         async function fetchData() {
             setLoading(true);
+            setChangeableContent("");
+            setNewTitle(currentNote)
             try {
                 const data = await useData(currentNote);
 
                 if (data) {
-                    // check if data is an array before reversing it
                     const messagesArray = Array.isArray(data) ? data.reverse() : [data];
                     setMessages(messagesArray);
                     setChangeableContent(messagesArray.map(m => m.content).join(" "));
                 }
-
             } catch (error) {
                 console.error("Error fetching data:", error);
             } finally {
@@ -39,7 +39,6 @@ export default function TextArea() {
     }, [currentNote]);
 
     function handleChange(e: ChangeEvent<HTMLTextAreaElement>) {
-        console.log(e.target.value)
         setChangeableContent(e.target.value);
     }
 
@@ -53,7 +52,6 @@ export default function TextArea() {
         let newContent = "";
 
         for (let i = 0; i < updatedMessages.length; i++) {
-            console.log(updatedMessages[i].content)
             const messageWords = updatedMessages[i].content.split(" ");
             const elementsOfThisMessage = diffResult!.slice(index, index + messageWords.length);
             index += messageWords.length;
@@ -66,19 +64,15 @@ export default function TextArea() {
             }, '');
 
             if (joinedMessage === "") {
-                console.log("Delete Entire Message - ", updatedMessages[i]);
                 await deleteText(updatedMessages[i].id, currentNote);
                 updatedMessages.splice(i, 1);
                 i--;
-
             } else if (joinedMessage !== updatedMessages[i].content) {
-                console.log("Edit message -", updatedMessages[i].content, "with ID -", updatedMessages[i].id, "to -", joinedMessage);
                 await editText({ content: joinedMessage, id: updatedMessages[i].id, currentNote });
                 updatedMessages[i].content = joinedMessage;
             }
         }
 
-        // Handle new content
         if (index < diffResult!.length) {
             newContent = diffResult!.slice(index).reduce((acc, word) => {
                 if (word.type === 'added') {
@@ -88,17 +82,12 @@ export default function TextArea() {
             }, '');
 
             if (newContent) {
-                console.log("New String to be Posted - ", newContent);
                 const response = await postText(newContent, currentNote);
-
-                // Ensure response is not undefined and properly typed before pushing
                 if (response && response.id && response.content) {
                     updatedMessages.push({
                         id: response.id,
                         content: response.content,
                     });
-                } else {
-                    console.error("Invalid response from postText:", response);
                 }
             }
         }
@@ -107,10 +96,33 @@ export default function TextArea() {
         setChangeableContent(input);
     }
 
+    function handleTitleChange(e: ChangeEvent<HTMLInputElement>){
+        setNewTitle(e.target.value);
+    }
+
+    async function handleTitleBlur() {
+        // Only update if the title has actually changed
+        if (newTitle.trim() === "" || newTitle === currentNote) {
+            return;
+        }
+
+        try {
+            await changeTitle(currentNote, newTitle);
+            setCurrentNote(newTitle);  // Update currentNote after successful API call
+        } catch (error) {
+            console.error("Error changing title:", error);
+        }
+    }
+
     if (loading) return <div className='w-full h-screen flex items-center justify-center'>Loading ...</div>;
     return (
         <div className="flex flex-col w-full bg-black m-10">
-            <h1 className='text-4xl pb-7 underline'>{currentNote}</h1>
+            <input 
+                value={newTitle}
+                onChange={handleTitleChange}
+                onBlur={handleTitleBlur}
+                className='resize-none border-none focus:outline-none bg-black text-white text-4xl pb-7'
+            />
             <div className='flex flex-col w-full space-y-2'>
                 <TextareaAutosize
                     placeholder='type something ...'
@@ -185,7 +197,6 @@ async function editText(message: { content: string, id: string, currentNote: str
         console.error("Unable to post message", e);
     }
 }
-
 async function deleteText(messageId: string, currentNote: string) {
     if (messageId === "") {
         return;
@@ -201,6 +212,23 @@ async function deleteText(messageId: string, currentNote: string) {
         console.log('API Response:', resp);
     } catch (e) {
         console.error("Unable to post message", e);
+    }
+}
+async function changeTitle(channelName: string, newTitle: string) {
+    if (channelName === "" || newTitle === "") {
+        return;
+    }
+    try {
+        const resp = await fetch("/api/changeTitle", {
+            method: "PUT",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ channelName, newTitle }),
+        });
+        console.log('API Response:', resp);
+    } catch (e) {
+        console.error("Unable to edit title", e);
     }
 }
 
