@@ -116,7 +116,7 @@ export default function TextArea() {
 
     if (loading) return <div className='w-full h-screen flex items-center justify-center'>Loading ...</div>;
     return (
-        <div className="flex flex-col w-full bg-black m-10">
+        <div className="flex flex-col w-full bg-black m-10 my-12">
             <input 
                 value={newTitle}
                 onChange={handleTitleChange}
