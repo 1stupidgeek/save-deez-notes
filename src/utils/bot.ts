@@ -232,7 +232,7 @@ let clientReady = false;
 interface ChannelInfo {
     id: string;
     name: string;
-    type: string;
+    type: ChannelType;
 }
 
 export async function getClient(): Promise<Client> {
