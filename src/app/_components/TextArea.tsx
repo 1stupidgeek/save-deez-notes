@@ -158,6 +158,7 @@ async function useData(currentNote: string) {
     }
 }
 async function postText(message: string, currentNote: string) {
+
     if (message === '') {
         return {};
     };
@@ -171,10 +172,14 @@ async function postText(message: string, currentNote: string) {
         });
         console.log('API Response:', resp);
         const data = await resp.json();
+        if(data.data){
         return {
             content: data.data.content,
             id: data.data.id
         }
+    }else{
+        throw new Error("Error while posting message")
+    }
     } catch (e) {
         console.error("Unable to post message", e);
     }
