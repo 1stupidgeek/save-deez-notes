@@ -70,7 +70,7 @@ export default function SideNav() {
     <>
       <button
         onClick={toggleSidebar}
-        className={`fixed top-2 left-4 z-50 md:hidden bg-yellow-600 p-2 rounded-full transition-all duration-200 ease-in-out ${isOpen ? 'left-[232px]' : 'left-4'
+        className={`fixed top-2 left-4 z-50 md:hidden text-white bg-yellow-600 p-2 rounded-full transition-all duration-200 ease-in-out ${isOpen ? 'left-[232px]' : 'left-4'
           }`}
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -79,7 +79,7 @@ export default function SideNav() {
       <div className={`
         fixed inset-y-0 left-0 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         md:relative md:translate-x-0 transition duration-200 ease-in-out
-        w-64 md:w-[18vw] border-[#444] border-r border-dashed h-screen bg-black text-white flex flex-col
+        w-64 md:w-[18vw] border-[#444] border-r border-dashed bg-black text-white flex flex-col
         z-40 md:z-auto
       `}>
         <div className="flex justify-center flex-col w-full p-4 border-b border-[#444] border-dashed">
@@ -111,7 +111,7 @@ export default function SideNav() {
             {isCreating ? (
               <div className="flex flex-col space-y-2">
                 <input
-                  className="w-full px-2 py-1 bg-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-600 rounded-md text-sm"
+                  className="w-full px-2 py-1 bg-black focus:outline-none focus:ring-2 focus:ring-yellow-600 rounded-md text-sm"
                   value={newNote}
                   onChange={handleChange}
                   placeholder="New note name"
@@ -135,8 +135,6 @@ export default function SideNav() {
             )}
           </div>
         )}
-          {/* </div> */}
-        {/* )} */}
       </div>
     </>
   );

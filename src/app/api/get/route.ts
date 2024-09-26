@@ -4,6 +4,7 @@ import { getAllMessages } from "@/utils/bot";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
+
   try {
     const data = await req.json();
     const channelName = data.currentNote;
@@ -13,10 +14,6 @@ export async function POST(req: NextRequest) {
     }
 
     const messages = await getAllMessages(channelName);
-
-    if (!messages || messages.length === 0) {
-      return new NextResponse(JSON.stringify([]), { status: 200 });
-    }
 
     return new NextResponse(JSON.stringify(messages), { status: 200 });
 

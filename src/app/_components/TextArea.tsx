@@ -83,6 +83,7 @@ export default function TextArea() {
 
             if (newContent) {
                 const response = await postText(newContent, currentNote);
+                console.log()
                 if (response && response.id && response.content) {
                     updatedMessages.push({
                         id: response.id,
@@ -116,7 +117,7 @@ export default function TextArea() {
 
     if (loading) return <div className='w-full h-screen flex items-center justify-center'>Loading ...</div>;
     return (
-        <div className="flex flex-col w-full bg-black m-10 my-12">
+        <div className="flex flex-col w-full bg-black m-10 my-12 pr-4">
             <input 
                 value={newTitle}
                 onChange={handleTitleChange}
@@ -126,7 +127,7 @@ export default function TextArea() {
             <div className='flex flex-col w-full space-y-2'>
                 <TextareaAutosize
                     placeholder='type something ...'
-                    className="flex-grow resize-none border-none focus:outline-none text-white bg-black text-lg"
+                    className="flex-grow resize-none border-none focus:outline-none text-white bg-black text-lg h-full"
                     onChange={handleChange}
                     onBlur={handleBlur}
                     value={changeableContent}
@@ -141,7 +142,6 @@ async function useData(currentNote: string) {
     if (currentNote === "") {
         return;
     }
-    // console.log("current note -> ", currentNote)
     try {
         const resp = await fetch("/api/get", {
             method: "POST",
@@ -158,7 +158,6 @@ async function useData(currentNote: string) {
     }
 }
 async function postText(message: string, currentNote: string) {
-    // after data is posted, need to update the original messages state
     if (message === '') {
         return {};
     };

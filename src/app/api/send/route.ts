@@ -3,9 +3,12 @@ export const dynamic = 'force-dynamic'
 import { deleteMessage, editMessage, sendMessage } from "@/utils/bot";
 import { NextResponse } from "next/server";
 
+const key:string = process.env.KEY!;
+
 export async function POST(req: Request) {
     const data = await req.json();
     const { message, currentNote } = data;
+    
 
     try {
         const response = await sendMessage(message, currentNote);
@@ -17,8 +20,13 @@ export async function POST(req: Request) {
 }
 
 export async function PUT(req: Request) {
+    type Message = {
+        content: string;
+        id:string;
+        currentNote: string;
+    }
     const data = await req.json();
-    const message = data.message;
+    const message:Message = data.message;
 
     try {
         await editMessage(message);
