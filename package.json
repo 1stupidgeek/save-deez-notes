@@ -1,35 +1,33 @@
 {
-  "name": "sync-deez-notes",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "@discordjs/opus": "^0.9.0",
-    "@discordjs/voice": "^0.17.0",
-    "crypto-js": "^4.2.0",
-    "discord.js": "^14.16.1",
-    "lucide-react": "^0.446.0",
-    "next": "^14.2.13",
-    "react": "^18",
-    "react-dom": "^18",
-    "react-textarea-autosize": "^8.5.3",
-    "recoil": "^0.7.7",
-    "sodium-native": "^4.1.1",
-    "zlib-sync": "^0.1.9"
-  },
-  "devDependencies": {
-    "@types/crypto-js": "^4.2.2",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "daisyui": "^4.12.10",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
-  }
+    "name": "sync-deez-notes",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "crypto-js": "^4.2.0",
+        "discord.js": "^14.16.1",
+        "lucide-react": "^0.446.0",
+        "next": "^14.2.13",
+        "react": "^18",
+        "react-dom": "^18",
+        "react-textarea-autosize": "^8.5.3",
+        "recoil": "^0.7.7",
+        "sodium-native": "^4.1.1",
+        "zlib-sync": "^0.1.9"
+    },
+    "devDependencies": {
+        "@types/crypto-js": "^4.2.2",
+        "@types/node": "^20",
+        "@types/react": "^18",
+        "@types/react-dom": "^18",
+        "daisyui": "^4.12.10",
+        "postcss": "^8",
+        "tailwindcss": "^3.4.1",
+        "typescript": "^5"
+    }
 }
