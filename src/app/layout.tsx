@@ -2,6 +2,7 @@
 import localFont from "next/font/local";
 import "./globals.css";
 import { RecoilRoot } from "recoil";
+import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,6 +27,7 @@ export default function RootLayout({
       >
         <RecoilRoot>
         {children}
+        <Analytics />
         </RecoilRoot>
       </body>
     </html>
