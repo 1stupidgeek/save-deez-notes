@@ -225,6 +225,26 @@ async function fetchAllMessages(channel: TextChannel) {
     return allMessages;
 }
 
+export async function deleteChannel(channelName: string) {
+    const client = await getClient();
+    const channel = await getChannelByName(client, channelName)
+    try{
+        if (!channelName.trim()) {
+            console.log("Channel name cannot be empty");
+            return false;
+        }
+
+        if(!channel){
+            console.log("Channel doesn't exist")
+            return false;
+        }
+        await channel?.delete();
+
+    }catch(e){
+        console.error("Unable to delete channel - ", e)
+        throw new Error("Unable to delete channel")
+    }
+}
 
 
 // logic for file based posting

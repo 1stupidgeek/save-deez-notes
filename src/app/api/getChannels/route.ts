@@ -19,6 +19,7 @@ export async function GET() {
         }
 
         const channels = await getAllChannels();
+        console.log(channels)
         const str = JSON.stringify(channels)
 
         return new Response(str, { status: 200 })

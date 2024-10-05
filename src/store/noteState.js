@@ -2,5 +2,5 @@ import { atom } from "recoil";
 
 export const noteState = atom({
   key: 'noteState', // unique ID (with respect to other atoms/selectors)
-  default: 'general', // default value (aka initial value)
+  default: '', // default value (aka initial value)
 });

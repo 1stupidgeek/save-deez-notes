@@ -83,7 +83,6 @@ export default function TextArea() {
 
             if (newContent) {
                 const response = await postText(newContent, currentNote);
-                console.log()
                 if (response && response.id && response.content) {
                     updatedMessages.push({
                         id: response.id,
@@ -151,7 +150,6 @@ async function useData(currentNote: string) {
             body: JSON.stringify({ currentNote }),
         });
         const data = await resp.json();
-        console.log(data)
         return data;
     } catch (e) {
         console.error("Unable to post message", e);
@@ -170,7 +168,6 @@ async function postText(message: string, currentNote: string) {
             },
             body: JSON.stringify({ message: message, currentNote: currentNote }),
         });
-        console.log('API Response:', resp);
         const data = await resp.json();
         if(data.data){
         return {
@@ -196,7 +193,6 @@ async function editText(message: { content: string, id: string, currentNote: str
             },
             body: JSON.stringify({ message }),
         });
-        console.log('API Response:', resp);
     } catch (e) {
         console.error("Unable to post message", e);
     }
@@ -213,7 +209,6 @@ async function deleteText(messageId: string, currentNote: string) {
             },
             body: JSON.stringify({ messageId, currentNote }),
         });
-        console.log('API Response:', resp);
     } catch (e) {
         console.error("Unable to post message", e);
     }
@@ -230,7 +225,6 @@ async function changeTitle(channelName: string, newTitle: string) {
             },
             body: JSON.stringify({ channelName, newTitle }),
         });
-        console.log('API Response:', resp);
     } catch (e) {
         console.error("Unable to edit title", e);
     }
