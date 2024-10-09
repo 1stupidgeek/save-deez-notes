@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SaveDeezNotes
 
-## Getting Started
+## Installation
 
-First, run the development server:
+```sh
+# Using Yarn
+yarn install
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Using NPM
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Usage
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Setting environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Edit `.env.example` or if you're hosting it in Vercel, add these variables:
+   - `DISCORD_TOKEN` - Your Discord bot's token
+   - `KEY` - Your encryption key, could be anything
+   - `GUILD_ID` - Server your bot should create and store notes
 
-## Learn More
+2. Rename `.env.example` into `.env` (Ignore this if you're hosting it on Vercel)
 
-To learn more about Next.js, take a look at the following resources:
+### Starting the server
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+If you are hosting this on Vercel, you can skip this part.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+First build the project
 
-## Deploy on Vercel
+```sh
+yarn build
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+And start it
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```sh
+yarn start
+```
+
+Your application will be accessible from `localhost:3000`
