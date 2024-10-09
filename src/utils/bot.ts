@@ -3,6 +3,7 @@ import { ChannelType, Client, GatewayIntentBits, Guild, Message, TextChannel } f
 
 process.setMaxListeners(0);
 const KEY = process.env.KEY!;
+const GUILD_ID = process.env.GUILD_ID!;
 
 let client: Client | null = null;
 let clientReady = false;
@@ -105,11 +106,14 @@ export async function getAllChannels(): Promise<ChannelInfo[]> {
         const guild = await getGuild(client);
         await guild.channels.fetch();
 
-        return guild.channels.cache.map(channel => ({
-            id: channel.id,
-            name: channel.name,
-            type: channel.type
-        }));
+        return guild.channels.cache
+            .filter(channel => channel.type === ChannelType.GuildText)
+            .map(channel => ({
+                id: channel.id,
+                name: channel.name,
+                type: channel.type
+            }));
+
     } catch (error) {
         console.error("Failed to get channels:", error);
         return [];
@@ -117,7 +121,7 @@ export async function getAllChannels(): Promise<ChannelInfo[]> {
 }
 
 async function getGuild(client: Client): Promise<Guild> {
-    const guild = client.guilds.cache.first();
+    const guild = client.guilds.cache.get(GUILD_ID)
     if (!guild) throw new Error("Guild not found");
     return guild;
 }
