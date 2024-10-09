@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useEffect, useState, useCallback } from "react";
-import { noteState } from "../../store/noteState";
+import { noteState } from "@/store/noteState";
 import { useRecoilState } from "recoil";
-import { Menu, X, Plus, Trash2, Loader, AlertCircle } from 'lucide-react';
+import { Menu, X, Plus, Trash2, Loader, AlertCircle } from "lucide-react";
 
 type Note = {
   id: string;
@@ -39,10 +39,13 @@ export default function SideNav() {
     getNotes();
   }, [getNotes]);
 
-  const handleClick = useCallback((noteName: string) => {
-    setCurrentNote(noteName);
-    setIsOpen(false);
-  }, [setCurrentNote]);
+  const handleClick = useCallback(
+    (noteName: string) => {
+      setCurrentNote(noteName);
+      setIsOpen(false);
+    },
+    [setCurrentNote],
+  );
 
   const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setNewNote(e.target.value);
@@ -58,45 +61,52 @@ export default function SideNav() {
         setNewNote("");
         await createNewChannel(newNote);
         await getNotes();
-        
+
         const updatedNotes = await getAllChannels();
-        const noteCreated = updatedNotes.some((note:any) => note.name === formattedNote);
-        
+        const noteCreated = updatedNotes.some(
+          (note: { name: string }) => note.name === formattedNote,
+        );
+
         if (!noteCreated) {
           setErrorMessage("Too many requests. Please try again later.");
           setTimeout(() => setErrorMessage(null), 3000); // Clear error after 3 seconds
         } else {
           setCurrentNote(formattedNote);
         }
-        
+
         setIsCreating(false);
       } catch (error) {
         console.error("Error creating new note:", error);
-        setErrorMessage("An error occurred while creating the note. Please try again.");
+        setErrorMessage(
+          "An error occurred while creating the note. Please try again.",
+        );
         setTimeout(() => setErrorMessage(null), 3000); // Clear error after 3 seconds
       }
     }
   }, [newNote, setCurrentNote, getNotes]);
 
-  const handleDelete = useCallback(async (noteName: string) => {
-    try {
-      setDeletingNotes(prev => [...prev, noteName]);
-      await deleteChannel(noteName);
-      await getNotes();
-      if (currentNote === noteName && notes.length > 1) {
-        const newCurrentNote = notes.find(note => note.name !== noteName);
-        if (newCurrentNote) {
-          setCurrentNote(newCurrentNote.name);
+  const handleDelete = useCallback(
+    async (noteName: string) => {
+      try {
+        setDeletingNotes((prev) => [...prev, noteName]);
+        await deleteChannel(noteName);
+        await getNotes();
+        if (currentNote === noteName && notes.length > 1) {
+          const newCurrentNote = notes.find((note) => note.name !== noteName);
+          if (newCurrentNote) {
+            setCurrentNote(newCurrentNote.name);
+          }
         }
+      } catch (error) {
+        console.error("Error deleting note:", error);
+      } finally {
+        setDeletingNotes((prev) => prev.filter((name) => name !== noteName));
       }
-    } catch (error) {
-      console.error("Error deleting note:", error);
-    } finally {
-      setDeletingNotes(prev => prev.filter(name => name !== noteName));
-    }
-  }, [currentNote, notes, getNotes, setCurrentNote]);
+    },
+    [currentNote, notes, getNotes, setCurrentNote],
+  );
 
-  const toggleSidebar = useCallback(() => setIsOpen(prev => !prev), []);
+  const toggleSidebar = useCallback(() => setIsOpen((prev) => !prev), []);
 
   return (
     <>
@@ -110,22 +120,28 @@ export default function SideNav() {
       <button
         onClick={toggleSidebar}
         className={`fixed top-2 z-50 md:hidden text-white bg-yellow-600 p-2 rounded-full transition-all duration-200 ease-in-out ${
-          isOpen ? 'left-[232px]' : 'left-4'
+          isOpen ? "left-[232px]" : "left-4"
         }`}
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
-      <div className={`
-        fixed inset-y-0 left-0 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      <div
+        className={`
+        fixed inset-y-0 left-0 transform ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }
         md:relative md:translate-x-0 transition duration-200 ease-in-out
         w-64 md:w-[18vw] border-[#444] border-r border-dashed bg-black text-white flex flex-col
         z-40 md:z-auto
-      `}>
+      `}
+      >
         <div className="flex justify-center flex-col w-full p-4 border-b border-[#444] border-dashed">
           <h1 className="text-2xl font-bold text-center">SaveDeezNotes</h1>
         </div>
-        <h2 className="text-sm font-semibold px-4 py-2 border-b border-[#444] border-dashed">Your Notes</h2>
+        <h2 className="text-sm font-semibold px-4 py-2 border-b border-[#444] border-dashed">
+          Your Notes
+        </h2>
         <div className="flex-1 flex flex-col items-start w-full overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center w-full p-4">
@@ -155,9 +171,9 @@ export default function SideNav() {
                   {deletingNotes.includes(note.name) ? (
                     <Loader className="animate-spin text-white" size={16} />
                   ) : (
-                    <Trash2 
-                      className="text-gray-400 hover:text-red-400 transition-all duration-300 rounded-sm" 
-                      strokeWidth={1.75} 
+                    <Trash2
+                      className="text-gray-400 hover:text-red-400 transition-all duration-300 rounded-sm"
+                      strokeWidth={1.75}
                     />
                   )}
                 </button>
@@ -217,7 +233,7 @@ async function createNewChannel(channelName: string) {
     const resp = await fetch("/api/createNewChannel", {
       method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ channelName }),
     });
@@ -234,9 +250,9 @@ async function deleteChannel(channelName: string) {
     const resp = await fetch("/api/deleteChannel", {
       method: "DELETE",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ channelName })
+      body: JSON.stringify({ channelName }),
     });
     const data = await resp.json();
     return data;

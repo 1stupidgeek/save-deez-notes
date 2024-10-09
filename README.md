@@ -15,6 +15,7 @@ npm install
 ### Setting environment variables
 
 1. Edit `.env.example` or if you're hosting it in Vercel, add these variables:
+
    - `DISCORD_TOKEN` - Your Discord bot's token
    - `KEY` - Your encryption key, could be anything
    - `GUILD_ID` - Server your bot should create and store notes
