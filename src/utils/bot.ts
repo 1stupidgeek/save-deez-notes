@@ -49,7 +49,6 @@ export async function getChannelByName(
   client: Client,
   channelName: string,
 ): Promise<TextChannel | null> {
-  console.log("Finding channel:", channelName);
   const guild = await getGuild(client);
 
   return (
@@ -67,7 +66,6 @@ export async function createNewChannel(
     const guild = await getGuild(client);
 
     if (!channelName.trim()) {
-      console.log("Channel name cannot be empty");
       return false;
     }
 
@@ -78,7 +76,6 @@ export async function createNewChannel(
         (channel) => channel.name.toLowerCase() === channelName.toLowerCase(),
       )
     ) {
-      console.log(`Channel "${channelName}" already exists.`);
       return false;
     }
 
@@ -88,7 +85,6 @@ export async function createNewChannel(
       topic: `This channel was created by the bot on ${new Date().toLocaleString()}`,
     });
 
-    console.log(`New channel created: #${newChannel.name}`);
     return newChannel;
   } catch (error) {
     console.error("Error in createNewChannel:", error);
@@ -101,7 +97,6 @@ export async function changeTitle(channelName: string, newTitle: string) {
   const channel = await getChannelByName(client, channelName);
 
   if (!channel) {
-    console.log(`Channel "${channelName}" does not exist.`);
     return;
   }
 
@@ -110,9 +105,7 @@ export async function changeTitle(channelName: string, newTitle: string) {
 
   if (normalizedChannelName !== normalizedNewTitle) {
     await channel.setName(normalizedNewTitle);
-    console.log(`Channel title changed to: ${normalizedNewTitle}`);
   } else {
-    console.log(`Channel title is already set to: ${normalizedNewTitle}`);
   }
 }
 
@@ -146,7 +139,6 @@ export async function sendMessage(message: string, currentNote: string) {
   const channel = await getChannelByName(client, currentNote);
 
   if (!channel) {
-    console.log(`Failed to find channel: ${currentNote}`);
     return null;
   }
 
@@ -168,7 +160,6 @@ export async function editMessage(message: {
   const channel = await getChannelByName(client, message.currentNote);
 
   if (!channel) {
-    console.log(`Failed to find channel: ${message.currentNote}`);
     return null;
   }
 
@@ -206,7 +197,6 @@ export async function getLatestMessage(channelName: string) {
   const channel = await getChannelByName(client, channelName);
 
   if (!channel) {
-    console.log(`Failed to find channel: ${channelName}`);
     return null;
   }
 
@@ -234,12 +224,10 @@ export async function deleteChannel(channelName: string) {
   const channel = await getChannelByName(client, channelName);
   try {
     if (!channelName.trim()) {
-      console.log("Channel name cannot be empty");
       return false;
     }
 
     if (!channel) {
-      console.log("Channel doesn't exist");
       return false;
     }
     await channel?.delete();

@@ -54,7 +54,6 @@ export default function TextArea() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const update = useCallback(
     debounce(async (e: ChangeEvent<HTMLTextAreaElement>) => {
-      console.debug("Content changed", e.target.value);
       await postText(e.target.value, currentNote);
     }, 500),
     [currentNote],
