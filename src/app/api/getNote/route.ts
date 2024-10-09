@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { getAllMessages } from "@/utils/bot";
+import { getLatestMessage } from "@/utils/bot";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -15,9 +15,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const messages = await getAllMessages(channelName);
+    const message = await getLatestMessage(channelName);
 
-    return new NextResponse(JSON.stringify(messages), { status: 200 });
+    return new NextResponse(JSON.stringify(message), { status: 200 });
   } catch (error) {
     console.error("Error fetching messages:", error);
     return new NextResponse(
