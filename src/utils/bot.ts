@@ -1,5 +1,6 @@
 import { AES, enc } from "crypto-js";
 import {
+  AttachmentBuilder,
   ChannelType,
   Client,
   GatewayIntentBits,
@@ -144,9 +145,12 @@ export async function sendMessage(message: string, currentNote: string) {
 
   try {
     const encrypted = AES.encrypt(message, KEY).toString();
-    return await channel.send(encrypted);
+    const buffer = Buffer.from(encrypted, "utf-8");
+    const attachment = new AttachmentBuilder(buffer, { name: "message.txt" });
+
+    return await channel.send({ files: [attachment] });
   } catch (error) {
-    console.error("Error encrypting message:", error);
+    console.error("Error encrypting and sending message:", error);
     return null;
   }
 }
@@ -202,21 +206,30 @@ export async function getLatestMessage(channelName: string) {
 
   const message = (await channel.messages.fetch()).first();
 
-  if (!message) {
+  if (!message || !message.attachments.first()) {
     return { id: null, content: null, timestamp: null };
   }
 
-  let decryptedContent = AES.decrypt(message.content, KEY).toString(enc.Utf8);
+  const attachment = message.attachments.first();
 
-  if (!decryptedContent) {
-    decryptedContent = message.content;
+  try {
+    let decryptedContent;
+    if (attachment) {
+      const response = await fetch(attachment.url);
+      const arrayBuffer = await response.arrayBuffer();
+      const encrypted = Buffer.from(arrayBuffer).toString("utf-8");
+      decryptedContent = AES.decrypt(encrypted, KEY).toString(enc.Utf8);
+    }
+
+    return {
+      id: message.id,
+      content: decryptedContent,
+      timestamp: message.createdAt,
+    };
+  } catch (error) {
+    console.error("Error retrieving and decrypting message:", error);
+    return { id: message.id, content: null, timestamp: message.createdAt };
   }
-
-  return {
-    id: message.id,
-    content: decryptedContent,
-    timestamp: message.createdAt,
-  };
 }
 
 export async function deleteChannel(channelName: string) {
