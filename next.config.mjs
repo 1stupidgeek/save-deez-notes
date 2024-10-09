@@ -1,4 +1,9 @@
 /** @type {import('next').NextConfig} */
+
+import checkVars from './checkVars.mjs'
+
+checkVars()
+
 const nextConfig = {
     experimental: {
         serverComponentsExternalPackages: ['discord.js'],
