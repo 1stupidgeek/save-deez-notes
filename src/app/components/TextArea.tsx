@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import { noteState } from "@/store/noteState";
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { useRecoilState } from "recoil";
 import {
@@ -25,6 +25,8 @@ export default function TextArea() {
   const [content, setContent] = useState("");
   const [title, setTitle] = useState("");
 
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -43,16 +45,23 @@ export default function TextArea() {
     }
   }, [currentNote]);
 
+  useEffect(() => {
+    if (textAreaRef.current) {
+      textAreaRef.current.value = content;
+    }
+  }, [content]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const update = useCallback(
     debounce(async (e: ChangeEvent<HTMLTextAreaElement>) => {
       console.debug("Content changed", e.target.value);
       await postText(e.target.value, currentNote);
-      setContent(e.target.value);
     }, 500),
-    [],
+    [currentNote],
   );
 
   const handleContentChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setContent(e.target.value);
     update(e);
   };
 
@@ -89,9 +98,10 @@ export default function TextArea() {
       />
       <div className="flex flex-col w-full space-y-2">
         <TextareaAutosize
-          placeholder="type something ..."
+          placeholder="Type something ..."
           className="flex-grow resize-none border-none focus:outline-none text-white bg-black text-lg h-full"
           onChange={handleContentChange}
+          ref={textAreaRef}
           minRows={1}
         />
       </div>
