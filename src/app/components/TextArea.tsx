@@ -1,5 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
+
 import { noteState } from "@/store/noteState";
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
@@ -19,73 +20,68 @@ export default function TextArea() {
 
   useEffect(() => {
     if (currentNote) {
-      console.info("Current note", currentNote);
       const loadData = async () => {
         setLoading(true);
-        const data = await fetchMessage(currentNote.id);
-
-        if (data) {
-          setContent(data.content);
+        try {
+          const data = await fetchMessage(currentNote.id);
+          if (data) {
+            setContent(data.content);
+            setTitle(formatTitle(currentNote.name));
+          }
+        } catch (error) {
+          console.error("Error fetching message:", error);
+        } finally {
+          setLoading(false);
         }
-
-        setLoading(false);
       };
 
-      setTitle(
-        currentNote.name
-          .split("-")
-          .map((e) => e[0].toUpperCase() + e.substring(1))
-          .join(" "),
-      );
       loadData();
     }
   }, [currentNote]);
 
-  useEffect(() => {
-    if (titleRef.current && currentNote) {
-      titleRef.current.value = currentNote.name;
-    }
-  }, [currentNote]);
+  const formatTitle = (name: string) =>
+    name
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
 
-  useEffect(() => {
-    if (textAreaRef.current) {
-      textAreaRef.current.value = content;
-    }
-  }, [content]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const updateNote = useCallback(
-    debounce(async (e: ChangeEvent<HTMLTextAreaElement>) => {
+    debounce(async (value: string) => {
       if (currentNote) {
-        await postText(currentNote.id, e.target.value.trim());
+        try {
+          await postText(currentNote.id, value.trim());
+        } catch (error) {
+          console.error("Error updating note:", error);
+        }
       }
     }, 500),
     [currentNote],
   );
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const updateTitle = useCallback(
-    debounce(async (e: ChangeEvent<HTMLInputElement>) => {
-      const title = e.target.value.trim();
-
+    debounce(async (value: string) => {
       if (currentNote) {
-        await changeTitle(currentNote.id, title);
-        setCurrentNote({ id: currentNote.id, name: title });
+        try {
+          await changeTitle(currentNote.id, value.trim());
+          setCurrentNote({ id: currentNote.id, name: value.trim() });
+        } catch (error) {
+          console.error("Error updating title:", error);
+        }
       }
     }, 500),
-    [currentNote],
+    [currentNote, setCurrentNote],
   );
 
   const handleContentChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    if (currentNote) {
-      setContent(e.target.value);
-      updateNote(e);
-    }
+    const newContent = e.target.value;
+    setContent(newContent);
+    updateNote(newContent);
   };
 
   const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value);
-    updateTitle(e);
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    updateTitle(newTitle);
   };
 
   if (loading) {
@@ -109,14 +105,17 @@ export default function TextArea() {
           ref={titleRef}
         />
         <span
-          className={`absolute bottom-0 left-0 h-0.5 w-full bg-yellow-600 origin-left ${titleFocus ? "scale-x-100" : "scale-x-0"} transition-transform duration-300 rounded-md`}
-        ></span>
+          className={`absolute bottom-0 left-0 h-0.5 w-full bg-yellow-600 origin-left ${
+            titleFocus ? "scale-x-100" : "scale-x-0"
+          } transition-transform duration-300 rounded-md`}
+        />
       </div>
       <div className="flex flex-col w-full space-y-2">
         <TextareaAutosize
           placeholder="Type something ..."
           className="resize-none border-none focus:outline-none text-white bg-black text-lg h-full"
           onChange={handleContentChange}
+          value={content}
           ref={textAreaRef}
           minRows={1}
         />

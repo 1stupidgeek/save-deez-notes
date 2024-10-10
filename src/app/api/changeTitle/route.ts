@@ -3,24 +3,24 @@ export const dynamic = "force-dynamic";
 import { changeTitle } from "@/utils/bot";
 import { NextResponse } from "next/server";
 
-export async function PUT(req: Request) {
+export async function PATCH(req: Request) {
   try {
-    const data = await req.json();
-    const { id, title } = data;
+    const { id, title } = await req.json();
 
-    if (!title) {
+    if (!id || !title) {
       return NextResponse.json(
-        { error: "Bad request, ID or title is missing" },
+        { error: "No ID or title given" },
         { status: 400 },
       );
     }
 
-    await changeTitle(id, title);
+    const success = await changeTitle(id, title);
 
-    return NextResponse.json(
-      { message: "Title changed successfully" },
-      { status: 200 },
-    );
+    if (success) {
+      return new Response(null, { status: 202 });
+    } else {
+      return new Response(null, { status: 400 });
+    }
   } catch (e) {
     console.error("Unable to change title - ", e);
     return NextResponse.json(

@@ -1,4 +1,4 @@
-const vars = ["KEY", "DISCORD_TOKEN", "GUILD_ID"];
+const vars = ["DISCORD_TOKEN", "GUILD_ID"];
 
 const checkVars = () => {
   const missing = vars.filter((envVar) => !process.env[envVar]);
