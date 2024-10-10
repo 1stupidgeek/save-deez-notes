@@ -5,7 +5,7 @@ import SideNav from "@/app/components/SideNav";
 
 export default function Home() {
   return (
-    <main className="flex w-full h-screen bg-black justify-between">
+    <main className="flex w-full min-h-screen bg-black justify-between">
       <div>
         <SideNav />
       </div>
