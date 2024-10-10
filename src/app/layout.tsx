@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import localFont from "next/font/local";
 import "./globals.css";
 import { RecoilRoot } from "recoil";
@@ -26,8 +26,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <RecoilRoot>
-        {children}
-        <Analytics />
+          {children}
+          <Analytics />
         </RecoilRoot>
       </body>
     </html>
