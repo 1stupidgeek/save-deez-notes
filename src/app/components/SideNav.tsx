@@ -1,13 +1,8 @@
-import React, { ChangeEvent, useEffect, useState, useCallback } from "react";
-import { noteState } from "@/store/noteState";
+import React, { useEffect, useState, useCallback } from "react";
+import { Note, noteState } from "@/store/noteState";
 import { useRecoilState } from "recoil";
 import { Menu, X, Plus, Trash2, Loader, AlertCircle } from "lucide-react";
-
-type Note = {
-  id: string;
-  name: string;
-  type: number;
-};
+import { getAllChannels, createNewChannel, deleteChannel } from "@/utils/api";
 
 export default function SideNav() {
   const [currentNote, setCurrentNote] = useRecoilState(noteState);
@@ -22,10 +17,16 @@ export default function SideNav() {
   const getNotes = useCallback(async () => {
     try {
       const data = await getAllChannels();
-      if (data && data.length > 0) {
+
+      if (data) {
         setNotes(data);
+      }
+
+      if (data.length > 0) {
+        const note = data[0];
+
         if (!currentNote) {
-          setCurrentNote(data[0].name);
+          setCurrentNote({ id: note.id, name: note.name });
         }
       }
     } catch (error) {
@@ -39,39 +40,27 @@ export default function SideNav() {
     getNotes();
   }, [getNotes]);
 
-  const handleClick = useCallback(
-    (noteName: string) => {
-      setCurrentNote(noteName);
-      setIsOpen(false);
-    },
-    [setCurrentNote],
-  );
+  const createNote = useCallback(async () => {
+    const noteTitle = newNote.trim().split(" ").join("-");
 
-  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setNewNote(e.target.value);
-  }, []);
-
-  const handleUpload = useCallback(async () => {
-    if (newNote.trim()) {
-      const formattedNote = newNote.trim().split(" ").join("-");
-      if (formattedNote === "general") {
-        return;
-      }
+    if (noteTitle) {
       try {
         setNewNote("");
-        await createNewChannel(newNote);
-        await getNotes();
 
+        const { messages: channel } = await createNewChannel(newNote);
         const updatedNotes = await getAllChannels();
+
         const noteCreated = updatedNotes.some(
-          (note: { name: string }) => note.name === formattedNote,
+          (note: { name: string }) => note.name === noteTitle,
         );
 
+        console.debug("new note: ", channel);
+
         if (!noteCreated) {
-          setErrorMessage("Too many requests. Please try again later.");
-          setTimeout(() => setErrorMessage(null), 3000); // Clear error after 3 seconds
+          setErrorMessage("Failed to create a note.");
+          setTimeout(() => setErrorMessage(null), 3000);
         } else {
-          setCurrentNote(formattedNote);
+          setCurrentNote({ id: channel.id, name: channel.name });
         }
 
         setIsCreating(false);
@@ -80,27 +69,43 @@ export default function SideNav() {
         setErrorMessage(
           "An error occurred while creating the note. Please try again.",
         );
-        setTimeout(() => setErrorMessage(null), 3000); // Clear error after 3 seconds
+        setTimeout(() => setErrorMessage(null), 3000);
       }
     }
-  }, [newNote, setCurrentNote, getNotes]);
+  }, [newNote, setCurrentNote]);
 
-  const handleDelete = useCallback(
-    async (noteName: string) => {
+  const changeNote = useCallback(
+    (id: string) => {
+      if (currentNote && id === currentNote.id) return;
+      const note = notes.find((note) => note.id === id);
+      setCurrentNote(note!);
+      setIsOpen(false);
+    },
+    [currentNote, setCurrentNote, notes],
+  );
+
+  const deleteNote = useCallback(
+    async (id: string) => {
+      if (!currentNote) return;
       try {
-        setDeletingNotes((prev) => [...prev, noteName]);
-        await deleteChannel(noteName);
+        setDeletingNotes((prev) => [...prev, id]);
+
+        await deleteChannel(id);
         await getNotes();
-        if (currentNote === noteName && notes.length > 1) {
-          const newCurrentNote = notes.find((note) => note.name !== noteName);
+
+        if (currentNote.id === id) {
+          const newCurrentNote = notes.find((note) => note.id !== id);
           if (newCurrentNote) {
-            setCurrentNote(newCurrentNote.name);
+            setCurrentNote({
+              id: newCurrentNote.id,
+              name: newCurrentNote.name,
+            });
           }
         }
       } catch (error) {
         console.error("Error deleting note:", error);
       } finally {
-        setDeletingNotes((prev) => prev.filter((name) => name !== noteName));
+        setDeletingNotes((prev) => prev.filter((name) => name !== id));
       }
     },
     [currentNote, notes, getNotes, setCurrentNote],
@@ -147,38 +152,43 @@ export default function SideNav() {
             <div className="flex items-center justify-center w-full p-4">
               <Loader className="animate-spin text-yellow-600" />
             </div>
+          ) : notes.length <= 0 ? (
+            <p className="text-sm p-4">No notes, create one</p>
           ) : (
-            notes.map((note: Note) => (
-              <div
-                key={note.id}
-                className={`w-full flex justify-between px-4 py-2 transition-colors duration-300 text-start ${
-                  currentNote && currentNote.trim() === note.name.trim()
-                    ? "bg-yellow-600 text-white"
-                    : "hover:bg-gray-800"
-                }`}
-              >
-                <button
-                  onClick={() => handleClick(note.name)}
-                  className="w-full h-full text-start"
-                >
-                  {note.name}
-                </button>
-                <button
-                  onClick={() => handleDelete(note.name)}
-                  className="flex items-center justify-center w-8 h-8"
-                  disabled={deletingNotes.includes(note.name)}
-                >
-                  {deletingNotes.includes(note.name) ? (
-                    <Loader className="animate-spin text-white" size={16} />
-                  ) : (
-                    <Trash2
-                      className="text-gray-400 hover:text-red-400 transition-all duration-300 rounded-sm"
-                      strokeWidth={1.75}
-                    />
-                  )}
-                </button>
-              </div>
-            ))
+            notes.map(
+              (note: Note) =>
+                currentNote && (
+                  <div
+                    key={note.id}
+                    className={`w-full flex justify-between transition-colors duration-300 text-start ${
+                      currentNote && currentNote.id === note.id
+                        ? "bg-yellow-600 text-white"
+                        : "hover:bg-gray-800"
+                    }`}
+                  >
+                    <button
+                      onClick={() => changeNote(note.id)}
+                      className="w-full h-full px-4 py-2 text-start"
+                    >
+                      {note.name}
+                    </button>
+                    <button
+                      onClick={() => deleteNote(note.id)}
+                      className="flex items-center justify-center w-8 h-8 m-2"
+                      disabled={deletingNotes.includes(note.id)}
+                    >
+                      {deletingNotes.includes(note.id) ? (
+                        <Loader className="animate-spin text-white" size={16} />
+                      ) : (
+                        <Trash2
+                          className="text-white hover:text-red-400 transition-all duration-300 rounded-sm"
+                          strokeWidth={1.75}
+                        />
+                      )}
+                    </button>
+                  </div>
+                ),
+            )
           )}
         </div>
         {!loading && (
@@ -188,12 +198,12 @@ export default function SideNav() {
                 <input
                   className="w-full px-2 py-1 bg-black focus:outline-none focus:ring-2 focus:ring-yellow-600 rounded-md text-sm"
                   value={newNote}
-                  onChange={handleChange}
+                  onChange={(e) => setNewNote(e.target.value)}
                   placeholder="New note name"
                 />
                 <button
                   className="w-full px-3 py-1 bg-yellow-600 text-white rounded-md hover:bg-yellow-500 transition-colors duration-300 text-sm font-semibold flex items-center justify-center gap-2"
-                  onClick={handleUpload}
+                  onClick={createNote}
                 >
                   Create Note
                 </button>
@@ -212,52 +222,4 @@ export default function SideNav() {
       </div>
     </>
   );
-}
-
-async function getAllChannels() {
-  try {
-    const resp = await fetch("/api/getChannels");
-    if (!resp.ok) {
-      throw new Error(`HTTP error! status: ${resp.status}`);
-    }
-    const data = await resp.json();
-    return data;
-  } catch (e) {
-    console.error("Unable to fetch channels", e);
-    throw e;
-  }
-}
-
-async function createNewChannel(channelName: string) {
-  try {
-    const resp = await fetch("/api/createNewChannel", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ channelName }),
-    });
-    const data = await resp.json();
-    return data;
-  } catch (e) {
-    console.error("Unable to post message", e);
-    throw e;
-  }
-}
-
-async function deleteChannel(channelName: string) {
-  try {
-    const resp = await fetch("/api/deleteChannel", {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ channelName }),
-    });
-    const data = await resp.json();
-    return data;
-  } catch (e) {
-    console.error("Unable to delete channel ", e);
-    throw e;
-  }
 }
