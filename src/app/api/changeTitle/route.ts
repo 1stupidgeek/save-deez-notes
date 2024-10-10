@@ -6,16 +6,16 @@ import { NextResponse } from "next/server";
 export async function PUT(req: Request) {
   try {
     const data = await req.json();
-    const { channelName, newTitle } = data;
+    const { id, title } = data;
 
-    if (!channelName || !newTitle) {
+    if (!title) {
       return NextResponse.json(
-        { error: "Both channelName and newTitle are required." },
+        { error: "Bad request, ID or title is missing" },
         { status: 400 },
       );
     }
 
-    await changeTitle(channelName, newTitle);
+    await changeTitle(id, title);
 
     return NextResponse.json(
       { message: "Title changed successfully" },

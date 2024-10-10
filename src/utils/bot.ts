@@ -72,14 +72,6 @@ export async function createNewChannel(
 
     await guild.channels.fetch();
 
-    if (
-      guild.channels.cache.some(
-        (channel) => channel.name.toLowerCase() === channelName.toLowerCase(),
-      )
-    ) {
-      return false;
-    }
-
     const newChannel = await guild.channels.create({
       name: channelName,
       type: ChannelType.GuildText,
@@ -93,21 +85,36 @@ export async function createNewChannel(
   }
 }
 
-export async function changeTitle(channelName: string, newTitle: string) {
+export async function deleteChannel(id: string) {
   const client = await getClient();
-  const channel = await getChannelByName(client, channelName);
+  const guild = await getGuild(client);
+  const channel = guild.channels.cache.get(id);
+
+  try {
+    if (!channel) {
+      return false;
+    }
+
+    await channel.delete();
+  } catch (e) {
+    console.error("Unable to delete channel - ", e);
+    throw new Error("Unable to delete channel");
+  }
+}
+
+export async function changeTitle(id: string, title: string) {
+  const client = await getClient();
+  const channel = client.guilds.cache.get(id);
 
   if (!channel) {
     return;
   }
 
-  const normalizedNewTitle = newTitle.trim();
-  const normalizedChannelName = channel.name.trim();
-
-  if (normalizedChannelName !== normalizedNewTitle) {
-    await channel.setName(normalizedNewTitle);
-  } else {
+  if (channel.name == title) {
+    return;
   }
+
+  await channel.setName(title.trim());
 }
 
 export async function getAllChannels(): Promise<ChannelInfo[]> {
@@ -135,17 +142,18 @@ async function getGuild(client: Client): Promise<Guild> {
   return guild;
 }
 
-export async function sendMessage(message: string, currentNote: string) {
+export async function sendMessage(channelId: string, message: string) {
   const client = await getClient();
-  const channel = await getChannelByName(client, currentNote);
+  const guild = await getGuild(client);
+  const channel = guild.channels.cache.get(channelId);
 
-  if (!channel) {
+  if (!channel || channel.type !== ChannelType.GuildText) {
     return null;
   }
 
   try {
-    const encrypted = AES.encrypt(message, KEY).toString();
-    const buffer = Buffer.from(encrypted, "utf-8");
+    const content = KEY ? AES.encrypt(message, KEY).toString() : message;
+    const buffer = Buffer.from(content, "utf-8");
     const attachment = new AttachmentBuilder(buffer, { name: "message.txt" });
 
     return await channel.send({ files: [attachment] });
@@ -155,52 +163,12 @@ export async function sendMessage(message: string, currentNote: string) {
   }
 }
 
-export async function editMessage(message: {
-  content: string;
-  id: string;
-  currentNote: string;
-}) {
+export async function getLatestMessage(channelId: string) {
   const client = await getClient();
-  const channel = await getChannelByName(client, message.currentNote);
+  const guild = await getGuild(client);
+  const channel = guild.channels.cache.get(channelId);
 
-  if (!channel) {
-    return null;
-  }
-
-  try {
-    const messageToEdit = await channel.messages.fetch(message.id);
-    const encrypted = AES.encrypt(message.content, KEY).toString();
-    return await messageToEdit.edit(encrypted);
-  } catch (error) {
-    console.error("Error encrypting or editing message:", error);
-    return null;
-  }
-}
-
-export async function deleteMessage(
-  messageId: string,
-  currentNote: string,
-): Promise<string> {
-  const client = await getClient();
-  const channel = await getChannelByName(client, currentNote);
-
-  if (!channel) return `Failed to find channel: ${currentNote}`;
-
-  try {
-    const messageToDelete = await channel.messages.fetch(messageId);
-    await messageToDelete.delete();
-    return `Message with ID ${messageId} successfully deleted`;
-  } catch (error) {
-    console.error("Error deleting message:", error);
-    return `Failed to delete message with ID ${messageId}: ${error}`;
-  }
-}
-
-export async function getLatestMessage(channelName: string) {
-  const client = await getClient();
-  const channel = await getChannelByName(client, channelName);
-
-  if (!channel) {
+  if (!channel || channel.type !== ChannelType.GuildText) {
     return null;
   }
 
@@ -213,39 +181,23 @@ export async function getLatestMessage(channelName: string) {
   const attachment = message.attachments.first();
 
   try {
-    let decryptedContent;
+    let content;
     if (attachment) {
       const response = await fetch(attachment.url);
       const arrayBuffer = await response.arrayBuffer();
-      const encrypted = Buffer.from(arrayBuffer).toString("utf-8");
-      decryptedContent = AES.decrypt(encrypted, KEY).toString(enc.Utf8);
+      const fileContent = Buffer.from(arrayBuffer).toString("utf-8");
+      content = KEY
+        ? AES.decrypt(fileContent, KEY).toString(enc.Utf8)
+        : fileContent;
     }
 
     return {
       id: message.id,
-      content: decryptedContent,
+      content: content,
       timestamp: message.createdAt,
     };
   } catch (error) {
     console.error("Error retrieving and decrypting message:", error);
     return { id: message.id, content: null, timestamp: message.createdAt };
-  }
-}
-
-export async function deleteChannel(channelName: string) {
-  const client = await getClient();
-  const channel = await getChannelByName(client, channelName);
-  try {
-    if (!channelName.trim()) {
-      return false;
-    }
-
-    if (!channel) {
-      return false;
-    }
-    await channel?.delete();
-  } catch (e) {
-    console.error("Unable to delete channel - ", e);
-    throw new Error("Unable to delete channel");
   }
 }

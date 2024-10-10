@@ -1,11 +1,11 @@
-export async function fetchMessage(currentNote: string) {
-  if (!currentNote) return;
+export async function fetchMessage(noteID: string) {
+  if (!noteID) return;
 
   try {
     const response = await fetch("/api/getNote", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ currentNote }),
+      body: JSON.stringify({ noteID }),
     });
     return await response.json();
   } catch (error) {
@@ -13,14 +13,14 @@ export async function fetchMessage(currentNote: string) {
   }
 }
 
-export async function postText(message: string, currentNote: string) {
+export async function postText(noteId: string, message: string) {
   if (!message) return;
 
   try {
     const response = await fetch("/api/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, currentNote }),
+      body: JSON.stringify({ message, noteId }),
     });
     const data = await response.json();
     return data.data;
@@ -29,48 +29,64 @@ export async function postText(message: string, currentNote: string) {
   }
 }
 
-export async function editText(message: {
-  content: string;
-  id: string;
-  currentNote: string;
-}) {
-  if (!message.content || !message.id) return;
-
-  try {
-    await fetch("/api/send", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message }),
-    });
-  } catch (error) {
-    console.error("Error editing text:", error);
-  }
-}
-
-export async function deleteText(messageId: string, currentNote: string) {
-  if (!messageId) return;
-
-  try {
-    await fetch("/api/send", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messageId, currentNote }),
-    });
-  } catch (error) {
-    console.error("Error deleting text:", error);
-  }
-}
-
-export async function changeTitle(channelName: string, newTitle: string) {
-  if (!channelName || !newTitle) return;
-
+export async function changeTitle(id: string, title: string) {
   try {
     await fetch("/api/changeTitle", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ channelName, newTitle }),
+      body: JSON.stringify({ id, title }),
     });
   } catch (error) {
     console.error("Error changing title:", error);
+  }
+}
+
+export async function getAllChannels() {
+  try {
+    const resp = await fetch("/api/getChannels");
+    if (!resp.ok) {
+      throw new Error(`HTTP error! status: ${resp.status}`);
+    }
+    const data = await resp.json();
+    return data;
+  } catch (e) {
+    console.error("Unable to fetch channels", e);
+    throw e;
+  }
+}
+
+export async function createNewChannel(channelName: string) {
+  try {
+    const resp = await fetch("/api/createNewChannel", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ channelName }),
+    });
+
+    const data = await resp.json();
+    return data;
+  } catch (e) {
+    console.error("Unable to post message", e);
+    throw e;
+  }
+}
+
+export async function deleteChannel(id: string) {
+  try {
+    const resp = await fetch("/api/deleteChannel", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id }),
+    });
+
+    const data = await resp.json();
+    return data;
+  } catch (e) {
+    console.error("Unable to delete channel ", e);
+    throw e;
   }
 }

@@ -14,6 +14,7 @@ export async function GET() {
     }
 
     const guild = client.guilds.cache.first();
+
     if (!guild) {
       throw new Error("Guild not found");
     }

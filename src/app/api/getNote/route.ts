@@ -6,16 +6,16 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
-    const channelName = data.currentNote;
+    const channelId = data.noteID;
 
-    if (!channelName) {
+    if (!channelId) {
       return new NextResponse(
         JSON.stringify({ error: "Channel name is required" }),
         { status: 400 },
       );
     }
 
-    const message = await getLatestMessage(channelName);
+    const message = await getLatestMessage(channelId);
 
     return new NextResponse(JSON.stringify(message), { status: 200 });
   } catch (error) {
