@@ -32,7 +32,7 @@ export async function postText(noteId: string, message: string) {
 export async function changeTitle(id: string, title: string) {
   try {
     await fetch("/api/changeTitle", {
-      method: "PUT",
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, title }),
     });

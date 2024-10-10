@@ -103,17 +103,15 @@ export async function deleteChannel(id: string) {
 
 export async function changeTitle(id: string, title: string) {
   const client = await getClient();
-  const channel = client.guilds.cache.get(id);
+  const guild = await getGuild(client);
+  const channel = guild.channels.cache.get(id);
 
-  if (!channel) {
-    return;
+  if (!channel || channel.name == title) {
+    return false;
   }
 
-  if (channel.name == title) {
-    return;
-  }
-
-  await channel.setName(title.trim());
+  await channel.setName(title);
+  return true;
 }
 
 export async function getAllChannels(): Promise<ChannelInfo[]> {
