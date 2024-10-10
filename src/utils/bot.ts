@@ -18,7 +18,6 @@ let clientReady = false;
 interface ChannelInfo {
   id: string;
   name: string;
-  type: ChannelType;
 }
 
 export async function getClient(): Promise<Client> {
@@ -128,7 +127,6 @@ export async function getAllChannels(): Promise<ChannelInfo[]> {
       .map((channel) => ({
         id: channel.id,
         name: channel.name,
-        type: channel.type,
       }));
   } catch (error) {
     console.error("Failed to get channels:", error);
